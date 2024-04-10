@@ -1,8 +1,6 @@
 #!/bin/bash
 
-
 BASE_URL=$1
-
 
 if [[ -z "$BASE_URL" ]]; then
   echo "Error: Please provide a BASE_URL as an argument in the format https://your_site.com/"
