@@ -1,7 +1,7 @@
 # About
 
 This is a simple tool to allow warming up of page caches.
-An use case could to pre-warm varnish cache straight after a full cache clear of a website.
+An use case could be pre-warming the varnish cache straight after a full cache clear of a website.
 
 # How to use
 
