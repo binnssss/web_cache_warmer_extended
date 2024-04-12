@@ -3,31 +3,49 @@ import csv
 import sys
 import requests
 
-def cache_warmer(csv_file_path, base_url):
-    if not base_url:
-        print("Error: BASE_URL environment variable is not provided.")
-        print("Please run the Docker container with '-e BASE_URL=https://your_site.com' argument")
-        print("docker run -e BASE_URL=https://your_site.com -v /csv/urls.csv:/app/urls.csv cache-warmer")
-        sys.exit(1)
+class HttpClient:
+    def get(self, url):
+        return requests.get(url)
 
-    with open(csv_file_path, 'r') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            for url in row:
-                if url.strip():
-                    full_url = base_url + url.strip()
-                    if url == '/':
-                        full_url = base_url
-                    try:
-                        response = requests.get(full_url)
-                        # Raise an exception for non-200 status codes
-                        response.raise_for_status()
-                        print(f"Successfully warmed up {full_url}")
-                    except requests.exceptions.RequestException as e:
-                        print(f"Failed to warmup {full_url}. Error: {str(e)}")
+class CacheWarmer:
+    def __init__(self, http_client):
+        self.http_client = http_client
+
+    def warm_up_cache(self, csv_file_path, base_url):
+        if not base_url:
+            raise ValueError("Error: BASE_URL environment variable is not provided.")
+
+        with open(csv_file_path, 'r') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                self._warm_up_urls(row, base_url)
+
+    def _warm_up_urls(self, urls, base_url):
+        for url in urls:
+            url = url.strip()
+            if url:
+                full_url = base_url + url if url != '/' else base_url
+                self._warm_up_url(full_url)
+
+    def _warm_up_url(self, url):
+        try:
+            response = self.http_client.get(url)
+            if response.status_code == 200:
+                print(f"Successfully warmed up {url}")
+            else:
+                raise requests.exceptions.HTTPError(f"Failed to warm up {url}. HTTP status code: {response.status_code}")
+        except requests.exceptions.RequestException as e:
+            print(f"Failed to warm up {url}. Error: {str(e)}")
+
 
 if __name__ == "__main__":
-    csv_file_path = 'urls.csv'
     base_url = os.environ.get('BASE_URL')
-    cache_warmer(csv_file_path, base_url)
+    if not base_url:
+        print("Error: BASE_URL environment variable is not provided.")
+        print("Please run the script with 'BASE_URL' environment variable set.")
+        sys.exit(1)
 
+    csv_file_path = 'urls.csv'
+    http_client = HttpClient()
+    cache_warmer = CacheWarmer(http_client)
+    cache_warmer.warm_up_cache(csv_file_path, base_url)
