@@ -1,4 +1,4 @@
-[![Build Docker Image](https://github.com/jozzya/web_cache_warmer/actions/workflows/docker.yml/badge.svg)](https://github.com/jozzya/web_cache_warmer/actions/workflows/docker.yml)
+[![Build Docker Image](https://github.com/jozzya/web_cache_warmer/actions/workflows/docker.yml/badge.svg)](https://github.com/jozzya/web_cache_warmer/actions/workflows/docker.yml )
 
 # About
 
