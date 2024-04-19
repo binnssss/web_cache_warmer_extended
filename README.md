@@ -1,3 +1,5 @@
+[![Build Docker Image](https://github.com/jozzya/web_cache_warmer/actions/workflows/docker.yml/badge.svg)](https://github.com/jozzya/web_cache_warmer/actions/workflows/docker.yml)
+
 # About
 
 This is a simple tool to allow warming up of page caches.
