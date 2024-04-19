@@ -2,6 +2,7 @@ import os
 import csv
 import sys
 import requests
+from multiprocessing import Pool
 
 class HttpClient:
     def get(self, url, headers=None):
@@ -16,17 +17,14 @@ class CacheWarmer:
         if not base_url:
             raise ValueError("Error: BASE_URL environment variable is not provided.")
 
-        with open(csv_file_path, 'r') as file:
+        with open(csv_file_path, 'r', errors='ignore') as file:
             reader = csv.reader(file)
-            for row in reader:
-                self._warm_up_urls(row, base_url)
+            urls = [row[0].strip() for row in reader]
 
-    def _warm_up_urls(self, urls, base_url):
-        for url in urls:
-            url = url.strip()
-            if url:
-                full_url = base_url + url if url != '/' else base_url
-                self._warm_up_url(full_url)
+        num_processes = os.cpu_count() or 1
+
+        with Pool(num_processes) as pool:
+            pool.map(self._warm_up_url, [(base_url + url if url != '/' else base_url) for url in urls])
 
     def _warm_up_url(self, url):
         try:
