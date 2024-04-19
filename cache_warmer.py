@@ -4,12 +4,13 @@ import sys
 import requests
 
 class HttpClient:
-    def get(self, url):
-        return requests.get(url)
+    def get(self, url, headers=None):
+        return requests.get(url, headers=headers)
 
 class CacheWarmer:
-    def __init__(self, http_client):
+    def __init__(self, http_client, user_agent=None):
         self.http_client = http_client
+        self.user_agent = user_agent
 
     def warm_up_cache(self, csv_file_path, base_url):
         if not base_url:
@@ -29,7 +30,8 @@ class CacheWarmer:
 
     def _warm_up_url(self, url):
         try:
-            response = self.http_client.get(url)
+            headers = {'User-Agent': self.user_agent} if self.user_agent else None
+            response = self.http_client.get(url, headers=headers)
             if response.status_code == 200:
                 print(f"Successfully warmed up {url}")
             else:
@@ -37,15 +39,19 @@ class CacheWarmer:
         except requests.exceptions.RequestException as e:
             print(f"Failed to warm up {url}. Error: {str(e)}")
 
-
 if __name__ == "__main__":
     base_url = os.environ.get('BASE_URL')
+    user_agent = os.environ.get('USER_AGENT')
+
     if not base_url:
         print("Error: BASE_URL environment variable is not provided.")
         print("Please run the script with 'BASE_URL' environment variable set.")
         sys.exit(1)
 
+    if not user_agent:
+        user_agent = input("Please enter the user agent: ")
+
     csv_file_path = 'urls.csv'
     http_client = HttpClient()
-    cache_warmer = CacheWarmer(http_client)
+    cache_warmer = CacheWarmer(http_client, user_agent=user_agent)
     cache_warmer.warm_up_cache(csv_file_path, base_url)
