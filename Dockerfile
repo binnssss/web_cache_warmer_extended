@@ -19,7 +19,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy cache warmer script
-COPY reports.py .
+COPY cache_warmer.py .
 
 # Run cache warmer script
-CMD ["python", "reports.py"]
+CMD ["python", "cache_warmer.py"]

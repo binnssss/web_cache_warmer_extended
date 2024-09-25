@@ -1,20 +1,21 @@
 import datetime
+import time
 import os
 import csv
 import sys
 import requests
+import tempfile
 from multiprocessing import Pool
-from io import StringIO
+from requests.exceptions import RequestException
 
 class HttpClient:
     def get(self, url, headers=None):
-        return requests.get(url, headers=headers)
+        return requests.get(url, headers=headers, verify=certifi.where())
 
 class CacheWarmer:
     def __init__(self, http_client, user_agent=None):
         self.http_client = http_client
         self.user_agent = user_agent
-        self.csv_buffer = StringIO()
         self.data = []
 
     def warm_up_cache(self, csv_file_path, base_url):
@@ -32,24 +33,33 @@ class CacheWarmer:
                 else (base_url + url if url != '/' else base_url)) 
                     for url in urls])
             
-        # print(results)
-        self.data.extend(results)
+        valid_data = [row for row in results if row is not None]
+        print(f"Total number of URLs: {len(urls)}")    
+        print(f"Number of failed URLs: {len(valid_data)}")  
+        self.data.extend(valid_data)
+
+    def get_error_status(self, error):
+        return type(error).__name__
 
     def warm_up_urls(self, url):
+        response = None
         try:
             headers = {'User-Agent': self.user_agent} if self.user_agent else None
             response = self.http_client.get(url, headers=headers)
             if response.status_code == 200:
-                code = response.status_code
                 message = "OK"
-                print(f"Status {message} [{code}]: {url}")
+                print(f"Status {message} [{response.status_code}]: {url}")
             else:
-                code = response.status_code
-                message = "FAILED"
-                raise requests.exceptions.HTTPError(f"Status {message} [{code}]: {url}")
-        except requests.exceptions.RequestException as e:
-            print(f"Status {message} [{response.status_code}]: {url}")
-            result = {'url': url, 'code': response.status_code}
+                raise requests.exceptions.HTTPError(f"Error [{response.status_code}]")
+        except RequestException as e:
+            message = "FAILED"
+            if response is not None:
+                print(response.status_code)
+                status = response.status_code
+            else:
+                status = self.get_error_status(e)
+            print(f"Status {message} [{status}]: {url} {e}")
+            result = {'url': url, 'status': status, 'error': e}
             return result
 
     def write_result_to_csv(self, filename=None):
@@ -62,7 +72,7 @@ class CacheWarmer:
             os.makedirs(os.path.dirname(filename), exist_ok=True)
  
         with open(filename, mode='w', newline='') as file:
-            fieldnames = ['url', 'code', 'status']
+            fieldnames = ['url', 'status', 'error']
             writer = csv.DictWriter(file, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(self.data)
@@ -84,21 +94,16 @@ if __name__ == "__main__":
     csv_file_path = 'urls.csv'
     http_client = HttpClient()
     cache_warmer = CacheWarmer(http_client, user_agent=user_agent)
-    generate = input(f"Do you want to generate a report? (Yes/No): ")
 
     current_date = datetime.datetime.now().strftime("%Y_%m_%d")
-    filename = f'/report_{current_date}.csv'
+    filename = f'/URL_reports.csv'
+
+    start = time.time()
+    cache_warmer.warm_up_cache(csv_file_path, base_url)
+    print ('Report took', "{:.2f}".format(time.time()-start) ,' seconds to generate')
+    save_report = input("Do you want to save the report? (Yes/No): ")
     
-    if generate.lower() in ('yes', 'y'):
-        cache_warmer.warm_up_cache(csv_file_path, base_url)
-        save_report = input("Do you want to save the report? (Yes/No): ")
-        current_directory = "~/"
-        
-        if save_report.lower() in ('yes', 'y'):
-            os.environ['FILENAME'] = filename
-            cache_warmer.write_result_to_csv(filename)
-        else:
-            print("Report generated but not saved.")
+    if save_report.lower() in ('yes', 'y'):
+        cache_warmer.write_result_to_csv(filename)
     else:
-        print("Exiting without generating a report.")
-        sys.exit(0)
+        print("Report generated but not saved.")
