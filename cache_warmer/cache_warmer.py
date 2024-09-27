@@ -1,4 +1,5 @@
 import datetime
+import subprocess
 import time
 import os
 import csv
@@ -10,7 +11,7 @@ from requests.exceptions import RequestException
 
 class HttpClient:
     def get(self, url, headers=None):
-        return requests.get(url, headers=headers, verify='/app/cert/ca_cert.pem')
+        return requests.get(url, headers=headers)
 
 class CacheWarmer:
     def __init__(self, http_client, user_agent=None):
@@ -21,10 +22,8 @@ class CacheWarmer:
     def warm_up_cache(self, csv_file_path, base_url):
         if not base_url:
             raise ValueError("Error: BASE_URL environment variable is not provided.")
-        
-        with open(csv_file_path, 'r', errors='ignore') as file:
-            reader = csv.DictReader(file)
-            urls = [row['New URL'].strip() for row in reader]
+
+        urls = self.csv_reader(csv_file_path)   
 
         num_processes = os.cpu_count() or 1
 
@@ -47,6 +46,27 @@ class CacheWarmer:
 
         return temp_filename
 
+    def csv_reader(self, file_path):
+        try:
+            with open(file_path, 'r', errors='ignore') as file:
+                has_header = csv.Sniffer().has_header()
+                file.seek(0)
+
+                if has_header:
+                    reader = csv.DictReader(file)
+                    first_column = reader.fieldnames[0]
+                    urls = [row[first_column].strip() for row in reader if row.get(first_column)]
+                else:
+                    reader = csv.reader(file)
+                    urls = [row[0].strip() for row in reader if len(row) > 0]
+
+                return urls
+                
+        except FileNotFoundError:
+            print(f"File {file_path} not found.")
+        except Exception as e:
+            print(f"An error occurred while reading the file: {e}")
+      
     def get_error_status(self, error):
         return type(error).__name__
 
@@ -73,8 +93,7 @@ class CacheWarmer:
     def write_result_to_csv(self, temp_file, filename=None):
         """Writes the results stored in self.results to a CSV file."""
         if filename is None:
-            current_date = datetime.datetime.now().strftime("%Y_%m_%d")
-            filename = f'report_{current_date}.csv'
+            filename = f'URL_reports.csv'
 
         if os.path.dirname(filename):
             os.makedirs(os.path.dirname(filename), exist_ok=True)
@@ -83,7 +102,7 @@ class CacheWarmer:
             with open(temp_file, 'r') as temp_file:
                 final_csv.write(temp_file.read())
 
-        print(f"Report saved as {filename}")   
+        print(f"Report saved as {filename}")
 
 if __name__ == "__main__":
     base_url = os.environ.get('BASE_URL')
@@ -97,19 +116,20 @@ if __name__ == "__main__":
     if not user_agent:
         user_agent = input("Please enter the user agent: ")
 
-    csv_file_path = '/app/csv/urls.csv'
+    current_directory = os.getcwd()
+
+    csv_file_path = current_directory + '/urls.csv'
     http_client = HttpClient()
-    cache_warmer = CacheWarmer(http_client, user_agent=user_agent)
+    cache_warmer = CacheWarmer(http_client, user_agent)
 
     current_date = datetime.datetime.now().strftime("%Y_%m_%d")
-    filename = f'/URL_reports.csv'
 
     start = time.time()
     temp_file = cache_warmer.warm_up_cache(csv_file_path, base_url)
     print ('Report took', "{:.2f}".format(time.time()-start) ,' seconds to generate')
-    save_report = os.environ.get('GENERATE') or input("Do you want to save the report? (Yes/No): ")
+    save_report = input("Do you want to save the report? (Yes/No): ")
     
     if save_report.lower() in ('yes', 'y', '-y'):
-        cache_warmer.write_result_to_csv(temp_file, filename)
+        cache_warmer.write_result_to_csv(temp_file)
     else:
         print("Report generated but not saved.")

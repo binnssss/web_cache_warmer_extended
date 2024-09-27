@@ -1,7 +1,6 @@
 #!/bin/bash
 
 BASE_URL=$1
-GENERATE=$3
 USER_AGENT=$2
 
 
@@ -12,9 +11,11 @@ fi
 
 # Pass in Chrome user agent if nothing is passed in.
 if [[ -z "$USER_AGENT" ]]; then
-  USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
+  USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0"
 fi
 
-docker run -it --name cache-warmer -e BASE_URL="$BASE_URL" -e GENERATE="$GENERATE" -e USER_AGENT="$USER_AGENT" -v $(pwd)../csv/urls.csv:/app/urls.csv cache-warmer
-docker cp cache-warmer:URL_reports.csv .
+docker run -it --name cache-warmer -e BASE_URL="$BASE_URL" -e USER_AGENT="$USER_AGENT" -v $(pwd)/cache_warmer/csv/urls.csv:/app/urls.csv cache-warmer
+
+docker cp cache-warmer:/app/URL_reports.csv . 
+
 docker rm cache-warmer
