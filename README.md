@@ -9,7 +9,7 @@ An use case could be pre-warming the varnish cache straight after a full cache c
 
 1. Add URL paths into CSV, delimited by commas.
 2. Build the docker container - `docker build -t cache-warmer .`
-3. To use the shell wrapper script run `./run_cache_warmer.sh https://your_site.com/ custom_user_agent`
+3. To use the shell wrapper script run `./scripts/run_cache_warmer.sh https://your_site.com/ custom_user_agent`
 4. The custom_user_agent defaults to the Chrome user agent if nothing is supplied.
 
 # Roadmap
