@@ -14,7 +14,7 @@ if [[ -z "$USER_AGENT" ]]; then
   USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0"
 fi
 
-docker run -it --name cache-warmer -e BASE_URL="$BASE_URL" -e USER_AGENT="$USER_AGENT" -v $(pwd)/cache_warmer/csv/urls.csv:/app/urls.csv cache-warmer
+docker run -it --name cache-warmer -e BASE_URL="$BASE_URL" -e USER_AGENT="$USER_AGENT" -v $(pwd)/app/csv/urls.csv:/app/urls.csv cache-warmer
 
 docker cp cache-warmer:/output .
 

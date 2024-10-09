@@ -1,0 +1,8 @@
+{
+    "version": "1.0",
+    "options":
+        [
+            "[1] HTTP Request Reports",
+            "[2] Sanitize Redirected URLs"
+        ]
+}
