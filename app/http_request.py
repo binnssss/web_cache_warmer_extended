@@ -5,7 +5,7 @@ from app.sanitize_module import SanitizeModule
 
 class HttpClient:
     def get(url, headers=None):
-        return requests.get(url, headers=headers, allow_redirects=True, verify=False)
+        return requests.get(url, headers=headers, allow_redirects=True)
     
     def error_handler(response):
         return requests.exceptions.HTTPError(response)
