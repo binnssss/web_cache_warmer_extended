@@ -1,6 +1,5 @@
 import time
 import app
-import sys
 import json
 
 from app.csv_module import CSVModule
@@ -15,7 +14,7 @@ if __name__ == "__main__":
     if not app.base_url:
         print("Error: BASE_URL environment variable is not provided.")
         print("Please run the script with 'BASE_URL' environment variable set.")
-        sys.exit(1)
+        app.sys_.exit(1)
 
     if not app.user_agent:
         user_agent = input("Please enter the user agent: ")
@@ -23,8 +22,7 @@ if __name__ == "__main__":
     csv_file_path = app.current_directory + '/urls.csv'
     http_client = HttpClient()
     module = FileLoader()
-
-    print(csv_file_path)
+    sanitize = False
     
     print(f"HTTP Request Test Tool v{data['version']}\n")
     for data in data['options']:
@@ -32,20 +30,16 @@ if __name__ == "__main__":
     operation = input("\nWhich function would you like to perform?: ")
 
     if operation == '1':
-        print("option 1")
-        module = FileLoader()
+        print("Generating HTTP Reports...")
+        pass
     elif operation == '2':
-        print("option 2")
-        module = FileLoader()
-    elif operation == '3':
-        print("option 3")
-        module = FileLoader()
+        app.sanitize = True
     else:
         print("Invalid Input")
-        sys.exit(1)
+        app.sys_.exit(1)
 
     start = time.time()
-    temp_file = module.load_cache(csv_file_path, app.base_url)
+    temp_file = module.load_cache(csv_file_path, app.base_url, app.sanitize)
     print('Report took', "{:.2f}".format(time.time() - start), 'seconds to generate')
 
     save_report = input("Do you want to save the report? (Yes/No): ")

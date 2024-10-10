@@ -5,33 +5,41 @@ from datetime import datetime
 import app
 
 class CSVModule:
-    def __init__(self):
-        self.urls_total = 0
-
-    def csv_reader(file_path):
+    def csv_file_reader(file_path):
         try:
-            with open(file_path, 'r', errors='ignore') as file:
-                has_header = csv.Sniffer().has_header(file.read())
-                file.seek(0)
-
-                if has_header:
-                    reader = csv.DictReader(file)
-                    first_column = reader.fieldnames[0]
-                    urls = [row[first_column].strip() for row in reader if row.get(first_column)]
+            with open(file_path, 'r', errors='ignore') as file:     
+                if CSVModule.csv_has_header(file):
+                    reader = CSVModule.csv_dict_reader(file)  
+                    file.seek(0)    
+                    column_name = input("Target Column (Case Sensitive): ")
+                    data = [(row, row[column_name].strip()) for row in reader if row.get(column_name)]
                 else:
+                    print('Check the provided file if there are any column names. Reading first column for URLs...')
                     reader = csv.reader(file)
-                    urls = [row[0].strip() for row in reader if len(row) > 0]
-
-                return urls
-
+                    data = [(row, row[0].strip()) for row in reader if len(row) > 0]
+            return data
         except FileNotFoundError:
             print(f"File {file_path} not found.")
         except Exception as e:
             print(f"An error occurred while reading the file: {e}")
+
+    def csv_reader(file):
+        return csv.reader(file)
+
+    def csv_has_header(file):
+        try:
+            reader = CSVModule.csv_dict_reader(file)
+            if reader.fieldnames:
+                file.seek(0)
+                return True
+        except:
+            return False
+    
+    def csv_dict_reader(file):
+        return csv.DictReader(file)
     
     def csv_set_dict_writer(temp_csv, fieldnames):
-        writer = csv.DictWriter(temp_csv, fieldnames=fieldnames)
-        return writer
+        return csv.DictWriter(temp_csv, fieldnames=fieldnames)
     
     def csv_write_header(writer):
         writer.writeheader()
@@ -45,8 +53,8 @@ class CSVModule:
             now = datetime.now()
             final_filename = f'/output/URL_reports_{now.strftime('%Y-%m-%d_%H-%M-%S')}.csv'
 
-        if app.system.path.dirname(final_filename):
-            app.system.makedirs(app.system.path.dirname(final_filename), exist_ok=True)
+        if app.os_.path.dirname(final_filename):
+            app.os_.makedirs(app.os_.path.dirname(final_filename), exist_ok=True)
 
         with open(final_filename, mode='w', newline='') as final_csv:
             with open(temp_filename, 'r') as temp_file:
