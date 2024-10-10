@@ -33,6 +33,7 @@ if __name__ == "__main__":
         print("Generating HTTP Reports...")
         pass
     elif operation == '2':
+        print("Sanitizing URL Redirects...")
         app.sanitize = True
     else:
         print("Invalid Input")
