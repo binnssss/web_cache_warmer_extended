@@ -19,9 +19,12 @@ if __name__ == "__main__":
     if not app.user_agent:
         user_agent = input("Please enter the user agent: ")
 
-    csv_file_path = app.current_directory + '/urls.csv'
     http_client = HttpClient()
+    csv_file_path = app.current_directory + '/urls.csv'
+    app.cert = app.current_directory + '/cert/cloudflare.pem'
+    app.locale = HttpClient.get_locale().lower()
     module = FileLoader()
+    
     sanitize = False
     
     print(f"HTTP Request Test Tool v{data['version']}\n")

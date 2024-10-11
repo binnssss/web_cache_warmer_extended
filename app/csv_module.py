@@ -12,6 +12,8 @@ class CSVModule:
                     reader = CSVModule.csv_dict_reader(file)  
                     file.seek(0)    
                     column_name = input("Target Column (Case Sensitive): ")
+                    if app.sanitize:
+                        app.reference_column = input('Column to compare (Case Sensitive): ')
                     data = [(row, row[column_name].strip()) for row in reader if row.get(column_name)]
                 else:
                     print('Check the provided file if there are any column names. Reading first column for URLs...')

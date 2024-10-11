@@ -5,7 +5,13 @@ from app.sanitize_module import SanitizeModule
 
 class HttpClient:
     def get(url, headers=None):
-        return requests.get(url, headers=headers, allow_redirects=True)
+        return requests.get(url, headers=headers, verify=app.cert)
+    
+    def get_locale():
+        response = requests.get('https://ipinfo.io', verify=False)
+        data = response.json()
+        country_code = data['country']
+        return country_code
     
     def error_handler(response):
         return requests.exceptions.HTTPError(response)
@@ -21,18 +27,10 @@ class HttpClient:
             if response.status_code == 200:
                 message = "OK"
                 print(f"{counter} Status {message} [{response.status_code}]: {url}")
-                result = SanitizeModule.result_sanitizer(url, response.status_code, response, original_data)
-            else:
-                response.raise_for_status()       
-        except requests.exceptions.HTTPError as e:
-            if response is not None:
-                message = "FAILED"
-                status = response.status_code if response is not None else HttpClient.get_error_status(e)
-                print(f"{counter} Status {message} [{status}]: {url} {e}")
-                if app.sanitize:
-                    result = SanitizeModule.result_sanitizer(url, status, response, original_data, e)
-                    return result
-        except requests.exceptions.RequestException as e:
+            else: 
+                raise requests.exceptions.HTTPError(response)
+        except requests.exceptions.RequestException as e:    
+            print(e)
             if response is not None:
                 message = "FAILED"
                 status = response.status_code if response is not None else HttpClient.get_error_status(e)
