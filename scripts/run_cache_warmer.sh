@@ -8,7 +8,6 @@ if [[ ! -f ".env" ]]; then
   echo "Warning: .env file not found. Proceeding without environment variables from .env file."
   ENV_FILE_OPTION=""
 else
-  echo ".env file found. Loading environment variables from .env file."
   ENV_FILE_OPTION="--env-file .env"
 fi
 

@@ -29,7 +29,7 @@ if __name__ == "__main__":
     
     sanitize = False
     
-    print(f"HTTP Request Test Tool v{data['version']}\n")
+    print(f"\nHTTP Request Test Tool v{data['version']}\n")
     for data in data['options']:
         print(data)
     operation = input("\nWhich function would you like to perform?: ")
