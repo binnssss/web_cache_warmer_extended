@@ -34,7 +34,6 @@ class HttpClient:
             else: 
                 raise requests.exceptions.HTTPError(response)
         except requests.exceptions.RequestException as e:    
-            print(e)
             if response is not None:
                 message = "FAILED"
                 status = response.status_code if response is not None else HttpClient.get_error_status(e)
