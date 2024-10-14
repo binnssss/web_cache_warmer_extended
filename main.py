@@ -21,8 +21,10 @@ if __name__ == "__main__":
 
     http_client = HttpClient()
     csv_file_path = app.current_directory + '/urls.csv'
-    app.cert = app.current_directory + '/cert/cloudflare.pem'
-    app.locale = HttpClient.get_locale().lower()
+    
+    if app.cert:
+        app.cert = app.current_directory + app.cert
+
     module = FileLoader()
     
     sanitize = False
@@ -43,7 +45,7 @@ if __name__ == "__main__":
         app.sys_.exit(1)
 
     start = time.time()
-    temp_file = module.load_cache(csv_file_path, app.base_url, app.sanitize)
+    temp_file = FileLoader().load_cache(csv_file_path, app.base_url, app.sanitize)
     print('Report took', "{:.2f}".format(time.time() - start), 'seconds to generate')
 
     save_report = input("Do you want to save the report? (Yes/No): ")

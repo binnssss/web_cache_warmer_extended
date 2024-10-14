@@ -5,10 +5,14 @@ from app.sanitize_module import SanitizeModule
 
 class HttpClient:
     def get(url, headers=None):
+        if not app.cert:
+            app.cert = False
         return requests.get(url, headers=headers, verify=app.cert)
     
     def get_locale():
-        response = requests.get('https://ipinfo.io', verify=False)
+        if not app.cert:
+            app.cert = False
+        response = requests.get('https://ipinfo.io', verify=app.cert)
         data = response.json()
         country_code = data['country']
         return country_code
