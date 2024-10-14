@@ -11,10 +11,12 @@ class CSVModule:
                 if CSVModule.csv_has_header(file):
                     reader = CSVModule.csv_dict_reader(file)  
                     file.seek(0)    
-                    column_name = input("Target Column (Case Sensitive): ")
+                    if not app.target_column:
+                        app.target_column = input("Target Column (Case Sensitive): ")
                     if app.sanitize:
-                        app.reference_column = input('Column to compare (Case Sensitive): ')
-                    data = [(row, row[column_name].strip()) for row in reader if row.get(column_name)]
+                        if not app.reference_column:
+                            app.reference_column = input('Column to compare (Case Sensitive): ')
+                    data = [(row, row[app.target_column].strip()) for row in reader if row.get(app.target_column)]
                 else:
                     print('Check the provided file if there are any column names. Reading first column for URLs...')
                     reader = csv.reader(file)
@@ -54,6 +56,8 @@ class CSVModule:
         if final_filename is None:
             now = datetime.now()
             final_filename = f'/output/URL_reports_{now.strftime('%Y-%m-%d_%H-%M-%S')}.csv'
+            if app.sanitize:
+                final_filename = f'/output/URL_Sanitized_reports_{now.strftime('%Y-%m-%d_%H-%M-%S')}.csv'
 
         if app.os_.path.dirname(final_filename):
             app.os_.makedirs(app.os_.path.dirname(final_filename), exist_ok=True)
