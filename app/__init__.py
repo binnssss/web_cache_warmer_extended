@@ -18,3 +18,6 @@ target_column = os.environ.get('TARGET_COLUMN')
 
 # HTTP variables
 locale = 'gb'
+
+#TOKEN
+IPINFO_TOKEN = os.environ.get('IPINFO_TOKEN')
