@@ -45,17 +45,10 @@ class FileLoader:
                     
                     with Pool(app.num_processes) as pool:
                         results = pool.map(FileLoader.load_urls, url_data_tuples)
-
-                    
-                
                     print(f"Total number of URLs: {len(urls)}") 
-
                     if app.sanitize:
                         valid_data= [row for row in results if row is not None] 
-                        # valid_data_mismatch = [row for row in results['mismatch'] if row is not None] 
                         print(f"Number of matched URLs: {len(valid_data)}")  
-                        # print(f"Number of mismatched URLs: {len(valid_data_mismatch)}")  
-
                     else:
                         valid_data = [row for row in results if row is not None] 
                         print(f"Number of failed URLs: {len(valid_data)}")  
