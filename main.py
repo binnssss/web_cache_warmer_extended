@@ -39,6 +39,7 @@ if __name__ == "__main__":
         pass
     elif operation == '2':
         print("Sanitizing URL Redirects...")
+        app.locale = HttpClient.get_locale().lower()
         app.sanitize = True
     else:
         print("Invalid Input")

@@ -45,10 +45,13 @@ class FileLoader:
                     
                     with Pool(app.num_processes) as pool:
                         results = pool.map(FileLoader.load_urls, url_data_tuples)
-                
-                    valid_data = [row for row in results if row is not None]
-                    print(f"Total number of URLs: {len(urls)}")    
-                    print(f"Number of failed URLs: {len(valid_data)}")  
+                    print(f"Total number of URLs: {len(urls)}") 
+                    if app.sanitize:
+                        valid_data= [row for row in results if row is not None] 
+                        print(f"Number of matched URLs: {len(valid_data)}")  
+                    else:
+                        valid_data = [row for row in results if row is not None] 
+                        print(f"Number of failed URLs: {len(valid_data)}")  
                     
                     CSVModule.csv_row_writer(writer, valid_data)
 
@@ -60,5 +63,4 @@ class FileLoader:
             FileLoader.urls_count.value += 1
             counter = f"({FileLoader.urls_count.value}/{FileLoader.urls_total})"
         result = HttpClient.http_request(url, counter, original_data)
-
         return result
